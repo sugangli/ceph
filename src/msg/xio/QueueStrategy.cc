@@ -27,6 +27,7 @@ QueueStrategy::QueueStrategy(int _n_threads)
 
 void QueueStrategy::ds_dispatch(Message *m) {
   msgr->ms_fast_preprocess(m);
+
   if (msgr->ms_can_fast_dispatch(m)) {
     msgr->ms_fast_dispatch(m);
     return;

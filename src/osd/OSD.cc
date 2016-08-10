@@ -5818,6 +5818,7 @@ bool OSD::heartbeat_dispatch(Message *m)
 
 bool OSD::ms_dispatch(Message *m)
 {
+  dout(30) << "OSD::ms_dispatch" << m << dendl;
   if (m->get_type() == MSG_OSD_MARK_ME_DOWN) {
     service.got_stop_ack();
     m->put();
@@ -5939,6 +5940,7 @@ void OSD::session_notify_pg_cleared(
 
 void OSD::ms_fast_dispatch(Message *m)
 {
+  dout(20)<<"OSD::ms_fast_dispatch"<<dendl;
   if (service.is_stopping()) {
     m->put();
     return;
@@ -5967,6 +5969,7 @@ void OSD::ms_fast_dispatch(Message *m)
 
 void OSD::ms_fast_preprocess(Message *m)
 {
+  dout(20)<<"OSD::ms_fast_preprocess"<<dendl;
   if (m->get_connection()->get_peer_type() == CEPH_ENTITY_TYPE_OSD) {
     if (m->get_type() == CEPH_MSG_OSD_MAP) {
       MOSDMap *mm = static_cast<MOSDMap*>(m);
@@ -6182,6 +6185,7 @@ void OSD::dispatch_op(OpRequestRef op)
 
 bool OSD::dispatch_op_fast(OpRequestRef& op, OSDMapRef& osdmap)
 {
+  dout(20) << "OSD::dispatch_op_fast "<< dendl;
   if (is_stopping()) {
     // we're shutting down, so drop the op
     return true;
@@ -6205,7 +6209,7 @@ bool OSD::dispatch_op_fast(OpRequestRef& op, OSDMapRef& osdmap)
 
   switch(op->get_req()->get_type()) {
   // client ops
-  case CEPH_MSG_OSD_OP:
+  case CEPH_MSG_OSD_OP:   
     handle_op(op, osdmap);
     break;
     // for replication etc.
@@ -8534,7 +8538,8 @@ struct send_map_on_destruct {
   }
 };
 
-void OSD::handle_op(OpRequestRef& op, OSDMapRef& osdmap)
+
+  void OSD::handle_op(OpRequestRef& op, OSDMapRef& osdmap)
 {
   MOSDOp *m = static_cast<MOSDOp*>(op->get_req());
   assert(m->get_type() == CEPH_MSG_OSD_OP);
@@ -8584,13 +8589,13 @@ void OSD::handle_op(OpRequestRef& op, OSDMapRef& osdmap)
 
   PG *pg = get_pg_or_queue_for_pg(pgid, op);
   if (pg) {
+    dout(7) <<"OSD::handle_op: pg not null"<< dendl;
     op->send_map_update = share_map.should_send;
     op->sent_epoch = m->get_map_epoch();
     enqueue_op(pg, op);
     share_map.should_send = false;
     return;
   }
-
   // ok, we didn't have the PG.  let's see if it's our fault or the client's.
 
   OSDMapRef send_map = service.try_get_map(m->get_map_epoch());
@@ -9146,6 +9151,7 @@ void OSD::get_latest_osdmap()
 
 int OSD::init_op_flags(OpRequestRef& op)
 {
+  dout(10)<<"OSD::init_op_flags"<<dendl;
   MOSDOp *m = static_cast<MOSDOp*>(op->get_req());
   vector<OSDOp>::iterator iter;
 

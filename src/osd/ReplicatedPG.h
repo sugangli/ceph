@@ -871,7 +871,9 @@ protected:
   void repop_all_applied(RepGather *repop);
   void repop_all_committed(RepGather *repop);
   void eval_repop(RepGather*);
+  void eval_commit(RepGather*);
   void issue_repop(RepGather *repop, OpContext *ctx);
+  void issue_commit(RepGather *repop, OpContext *ctx);
   RepGather *new_repop(
     OpContext *ctx,
     ObjectContextRef obc,
@@ -1024,6 +1026,13 @@ protected:
 			  bool map_snapid_to_clone=false,
 			  hobject_t *missing_oid=NULL);
 
+/**LS: find the context for the buffer  **/
+  int find_object_context_buffer(const hobject_t& oid,
+        ObjectContextRef *pobc,
+        bool can_create,
+        bool map_snapid_to_clone=false,
+        hobject_t *missing_oid=NULL);
+
   void add_object_context_to_pg_stat(ObjectContextRef obc, pg_stat_t *stat);
 
   void get_src_oloc(const object_t& oid, const object_locator_t& oloc, object_locator_t& src_oloc);
@@ -1149,6 +1158,8 @@ protected:
     const hobject_t& head, const hobject_t& coid,
     object_info_t *poi);
   void execute_ctx(OpContext *ctx);
+  void buffer_object(OpContext *ctx); //LS: buffer the content from 
+  int buffer_confirm_reply();//LS: reply the client for the buffer
   void finish_ctx(OpContext *ctx, int log_op_type, bool maintain_ssc=true,
 		  bool scrub_ok=false);
   void reply_ctx(OpContext *ctx, int err);

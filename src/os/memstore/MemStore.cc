@@ -1414,6 +1414,7 @@ int MemStore::BufferlistObject::read(uint64_t offset, uint64_t len,
 
 int MemStore::BufferlistObject::write(uint64_t offset, const bufferlist &src)
 {
+  std::cout<<"MemStore::BufferlistObject::write"<<std::endl;
   unsigned len = src.length();
 
   std::lock_guard<Spinlock> lock(mutex);
@@ -1535,7 +1536,8 @@ int MemStore::PageSetObject::read(uint64_t offset, uint64_t len, bufferlist& bl)
 }
 
 int MemStore::PageSetObject::write(uint64_t offset, const bufferlist &src)
-{
+{ 
+  std::cout<<"MemStore::PageSetObject::write"<<std::endl;
   unsigned len = src.length();
 
   DEFINE_PAGE_VECTOR(tls_pages);

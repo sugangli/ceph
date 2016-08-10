@@ -1,6 +1,8 @@
 #!/bin/sh
 
 # abort on failure
+# LS: change OSD dir to the attached volume
+OSD_DEV_DIR=/home/ubuntu/dev-ceph
 set -e
 
 if [ -n "$VSTART_DEST" ]; then
@@ -513,8 +515,8 @@ $CMDSDEBUG
 $extra_conf
 [osd]
 $DAEMONOPTS
-        osd data = $CEPH_DEV_DIR/osd\$id
-        osd journal = $CEPH_DEV_DIR/osd\$id/journal
+        osd data = $OSD_DEV_DIR/osd\$id
+        osd journal = $OSD_DEV_DIR/osd\$id/journal
         osd journal size = 100
         osd class tmp = out
         osd class dir = $OBJCLASS_PATH
@@ -625,9 +627,9 @@ if [ "$start_osd" -eq 1 ]; then
 EOF
 	    fi
 
-	    rm -rf $CEPH_DEV_DIR/osd$osd || true
-	    for f in $CEPH_DEV_DIR/osd$osd/*; do btrfs sub delete $f &> /dev/null || true; done
-	    mkdir -p $CEPH_DEV_DIR/osd$osd
+	    rm -rf $OSD_DEV_DIR/osd$osd || true
+	    for f in $OSD_DEV_DIR/osd$osd/*; do btrfs sub delete $f &> /dev/null || true; done
+	    mkdir -p $OSD_DEV_DIR/osd$osd
 
 	    uuid=`uuidgen`
 	    echo "add osd$osd $uuid"
@@ -635,7 +637,7 @@ EOF
 	    $SUDO $CEPH_ADM osd crush add osd.$osd 1.0 host=$HOSTNAME root=default
 	    $SUDO $CEPH_BIN/ceph-osd -i $osd $ARGS --mkfs --mkkey --osd-uuid $uuid
 
-	    key_fn=$CEPH_DEV_DIR/osd$osd/keyring
+	    key_fn=$OSD_DEV_DIR/osd$osd/keyring
 	    echo adding osd$osd key to auth repository
 	    $SUDO $CEPH_ADM -i $key_fn auth add osd.$osd osd "allow *" mon "allow profile osd"
 	fi

@@ -21,6 +21,7 @@
 #include "librados/RadosClient.h"
 #include "include/assert.h"
 #include "common/valgrind.h"
+#include "osdc/Objecter.h"
 
 #define dout_subsys ceph_subsys_rados
 #undef dout_prefix
@@ -611,6 +612,7 @@ int librados::IoCtxImpl::write(const object_t& oid, bufferlist& bl,
   bufferlist mybl;
   mybl.substr_of(bl, 0, len);
   op.write(off, mybl);
+  std::cout<<"librados::IoCtxImpl::write"<<std::endl;
   return operate(oid, &op, NULL);
 }
 
@@ -779,6 +781,74 @@ int librados::IoCtxImpl::aio_operate(const object_t& oid,
 
   return 0;
 }
+//LS: parallel version of aio write
+int librados::IoCtxImpl::aio_operate_parallel(const object_t& oid,
+             ::ObjectOperation *o, AioCompletionImpl *c,
+             const SnapContext& snap_context, int flags)
+{
+  auto ut = ceph::real_clock::now(client->cct);
+  /* can't write to a snapshot */
+  if (snap_seq != CEPH_NOSNAP)
+    return -EROFS;
+
+  Context *onack = new C_aio_Ack(c);
+  Context *oncommit = new C_aio_Safe(c);
+
+  c->io = this;
+  queue_aio_write(c);
+
+  // Objecter::Op *op = objecter->prepare_mutate_op(
+  //   oid, oloc, *o, snap_context, ut, flags, onack,
+  //   oncommit, &c->objver);
+
+  vector<Objecter::Op *> operations;
+  //LSFIXME: This is mainly for duplicate the operation for twice 
+  ::ObjectOperation *rep_0 = new ::ObjectOperation(*o);
+  ::ObjectOperation *rep_1 = new ::ObjectOperation(*o);
+
+  bool is_replication = true;//LSFIXME: This needs to be set at the application
+  int numofreplication = 3;
+  if (is_replication)
+  { 
+    operations.push_back(objecter->prepare_buffer_op(
+    oid, oloc, *rep_0, snap_context, ut, flags, onack,
+    oncommit, &c->objver));
+    operations.push_back(objecter->prepare_buffer_op(
+    oid, oloc, *rep_1, snap_context, ut, flags, onack,
+    oncommit, &c->objver));
+    operations.push_back(objecter->prepare_mutate_op(
+    oid, oloc, *o, snap_context, ut, flags, onack,
+    oncommit, &c->objver));
+
+    objecter->calc_target_parallel(&operations[2]->target,&operations[2]->last_force_resend);//LS: Use the first one to calculate.
+    operations[0]->target.osd = operations[2]->target.osds[2];
+    operations[1]->target.osd = operations[2]->target.osds[1];
+
+    std::cout << "operations[0]->target.osd:" << operations[0]->target.osd << "oid:" << oid << std::endl;
+    std::cout << "operations[1]->target.osd:" << operations[1]->target.osd << "oid:" << oid <<std::endl;
+    std::cout << "operations[2]->target.osd:" << operations[2]->target.osd << "oid:" << oid <<std::endl;
+
+    //objecter->op_submit_parallel(operations[0], &c->tid, NULL, true);
+
+    // objecter->op_submit_parallel(operations[1], &c->tid, NULL, true);
+    //LS: After some point, an ack should be here
+
+    objecter->op_submit_parallel(operations[2], &c->tid, NULL, true);
+  }
+  
+  
+  //LS: reset the target osd one by one
+  // for(vector<int>::iterator it = operations[2]->target.osds.end(); it != operations[2]->target.osds.begin(); ++it)
+  // {
+  //   int cur_index = distance(operations[2]->target.osds.begin(), it);
+  //   operations[cur_index]->target.osd = *it; 
+  //   objecter->op_submit_parallel(operations[cur_index], &c->tid, NULL, true);
+  // }
+
+  
+
+  return 0;
+}
 
 int librados::IoCtxImpl::aio_read(const object_t oid, AioCompletionImpl *c,
 				  bufferlist *pbl, size_t len, uint64_t off,
@@ -797,7 +867,8 @@ int librados::IoCtxImpl::aio_read(const object_t oid, AioCompletionImpl *c,
     oid, oloc,
     off, len, snapid, pbl, 0,
     onack, &c->objver);
-  objecter->op_submit(o, &c->tid);
+  //objecter->op_submit(o, &c->tid);
+  objecter->op_submit_parallel(o, &c->tid, NULL, false);//LS: read modification starts from here
   return 0;
 }
 

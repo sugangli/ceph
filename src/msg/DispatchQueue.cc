@@ -67,6 +67,7 @@ bool DispatchQueue::can_fast_dispatch(Message *m) const
 
 void DispatchQueue::fast_dispatch(Message *m)
 {
+  ldout(cct,20) << "DispatchQueue::fast_dispatch" << m << dendl;
   uint64_t msize = pre_dispatch(m);
   msgr->ms_fast_dispatch(m);
   post_dispatch(m, msize);
@@ -74,6 +75,7 @@ void DispatchQueue::fast_dispatch(Message *m)
 
 void DispatchQueue::fast_preprocess(Message *m)
 {
+  ldout(cct,20) << "DispatchQueue::fast_preprocess" << m << dendl;
   msgr->ms_fast_preprocess(m);
 }
 

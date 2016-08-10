@@ -213,6 +213,8 @@ public:
 
 void librados::ObjectOperation::exec(const char *cls, const char *method, bufferlist& inbl, librados::ObjectOperationCompletion *completion)
 {
+
+  std::cout<<"librados::ObjectOperation::exec"<<std::endl;
   ::ObjectOperation *o = &impl->o;
 
   ObjectOpCompletionCtx *ctx = new ObjectOpCompletionCtx(completion);
@@ -390,6 +392,7 @@ void librados::ObjectWriteOperation::write(uint64_t off, const bufferlist& bl)
 {
   ::ObjectOperation *o = &impl->o;
   bufferlist c = bl;
+  std::cout<<"librados::ObjectWriteOperation::write"<<std::endl;
   o->write(off, c);
 }
 
@@ -397,6 +400,7 @@ void librados::ObjectWriteOperation::write_full(const bufferlist& bl)
 {
   ::ObjectOperation *o = &impl->o;
   bufferlist c = bl;
+  std::cout<<"librados::ObjectWriteOperation::write_full"<<std::endl;
   o->write_full(c);
 }
 
@@ -1185,6 +1189,7 @@ int librados::IoCtx::create(const std::string& oid, bool exclusive,
 int librados::IoCtx::write(const std::string& oid, bufferlist& bl, size_t len, uint64_t off)
 {
   object_t obj(oid);
+  std::cout<<"librados::IoCtx::write"<<std::endl;
   return io_ctx_impl->write(obj, bl, len, off);
 }
 
@@ -1454,6 +1459,17 @@ int librados::IoCtx::aio_operate(const std::string& oid, AioCompletion *c,
   return io_ctx_impl->aio_operate(obj, &o->impl->o, c->pc,
 				  io_ctx_impl->snapc, 0);
 }
+
+//LS: parallel version of write
+int librados::IoCtx::aio_operate_parallel(const std::string& oid, AioCompletion *c,
+         librados::ObjectWriteOperation *o)
+{
+  object_t obj(oid);
+  return io_ctx_impl->aio_operate_parallel(obj, &o->impl->o, c->pc,
+          io_ctx_impl->snapc, 0);
+}
+
+
 int librados::IoCtx::aio_operate(const std::string& oid, AioCompletion *c,
 				 ObjectWriteOperation *o, int flags)
 {

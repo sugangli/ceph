@@ -24,6 +24,7 @@ Messenger *Messenger::create(CephContext *cct, const string &type,
 			     uint64_t nonce, uint64_t features, uint64_t cflags)
 {
   int r = -1;
+  std::cout<<"Messenger::create type: "<< type << std::endl;
   if (type == "random") {
     thread_local unsigned seed = (unsigned) time(nullptr) +
       (unsigned) std::hash<std::thread::id>()(std::this_thread::get_id());

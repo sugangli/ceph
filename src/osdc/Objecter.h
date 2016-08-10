@@ -1196,6 +1196,7 @@ public:
     bool paused;
 
     int osd;      ///< the final target osd, or -1
+    vector<int> osds;  ///< LS: parallel version of OSD vector  
 
     op_target_t(object_t oid, object_locator_t oloc, int flags)
       : flags(flags),
@@ -1817,6 +1818,8 @@ public:
   ceph::timespan osd_timeout;
 
   MOSDOp *_prepare_osd_op(Op *op);
+  MOSDOp *_prepare_osd_op_buffer(Op *op); //LS: buffer version of _prepare_osd_op
+  
   void _send_op(Op *op, MOSDOp *m = NULL);
   void _send_op_account(Op *op);
   void _cancel_linger_op(Op *op);
@@ -1841,6 +1844,7 @@ public:
   bool target_should_be_paused(op_target_t *op);
   int _calc_target(op_target_t *t, epoch_t *last_force_resend = 0,
 		   bool any_change = false);
+  
   int _map_session(op_target_t *op, OSDSession **s,
 		   shunique_lock& lc);
 
@@ -1870,6 +1874,7 @@ public:
   void linger_callback_flush(Context *ctx) {
     finisher->queue(ctx);
   }
+  int calc_target_parallel(op_target_t *t, epoch_t *last_force_resend = 0, bool any_change = false); //for parallel OSD read/write
 
 private:
   void _check_op_pool_dne(Op *op, unique_lock& sl);
@@ -1952,7 +1957,7 @@ private:
 		      cct->_conf->objecter_inflight_op_bytes),
     op_throttle_ops(cct, "objecter_ops", cct->_conf->objecter_inflight_ops),
     epoch_barrier(0)
-  { }
+  { };
   ~Objecter();
 
   void init();
@@ -2059,11 +2064,16 @@ private:
   void _op_submit_with_budget(Op *op, shunique_lock& lc,
 			      ceph_tid_t *ptid,
 			      int *ctx_budget = NULL);
+  void _op_submit_parallel(Op *op, shunique_lock& lc, ceph_tid_t *ptid, bool write_flag = false);
+  void _op_submit_with_budget_parallel(Op *op, shunique_lock& lc,
+            ceph_tid_t *ptid,
+            int *ctx_budget = NULL, bool write_flag = false);
   inline void unregister_op(Op *op);
 
   // public interface
 public:
   void op_submit(Op *op, ceph_tid_t *ptid = NULL, int *ctx_budget = NULL);
+  void op_submit_parallel(Op *op, ceph_tid_t *ptid = NULL, int *ctx_budget = NULL, bool write_flag = false);
   bool is_active() {
     shared_lock l(rwlock);
     return !((!inflight_ops.read()) && linger_ops.empty() &&
@@ -2170,6 +2180,24 @@ public:
     o->reqid = reqid;
     return o;
   }
+
+  // LS: prepare a new buffer operation for replica
+  Op *prepare_buffer_op(
+    const object_t& oid, const object_locator_t& oloc,
+    ObjectOperation& op, const SnapContext& snapc,
+    ceph::real_time mtime, int flags, Context *onack,
+    Context * oncommit, version_t *objver = NULL,
+    osd_reqid_t reqid = osd_reqid_t()){
+    Op *o = new Op(oid, oloc, op.ops, flags | global_op_flags.read() |
+        CEPH_OSD_FLAG_BUFFER, onack, oncommit, objver);
+    o->priority = op.priority;
+    o->mtime = mtime;
+    o->snapc = snapc;
+    o->out_rval.swap(op.out_rval);
+    o->reqid = reqid;
+    return o;
+  }
+  
   ceph_tid_t mutate(
     const object_t& oid, const object_locator_t& oloc,
     ObjectOperation& op, const SnapContext& snapc,
