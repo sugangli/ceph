@@ -385,6 +385,7 @@ int ObjBencher::write_bench(int secondsToRun,
     return -EINVAL;
   
   if (!formatter) {
+    
     out(cout) << "Maintaining " << concurrentios << " concurrent writes of "
 	      << data.op_size << " bytes to objects of size "
 	      << data.object_size << " for up to "

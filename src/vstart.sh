@@ -2,7 +2,7 @@
 
 # abort on failure
 # LS: change OSD dir to the attached volume
-OSD_DEV_DIR=/home/ubuntu/dev-ceph
+OSD_DEV_DIR=/home/ubuntu/dev-osd
 set -e
 
 if [ -n "$VSTART_DEST" ]; then

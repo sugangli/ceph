@@ -1386,6 +1386,7 @@ void OSDService::reply_op_error(OpRequestRef op, int err, eversion_t v,
   MOSDOpReply *reply = new MOSDOpReply(m, err, osdmap->get_epoch(), flags,
 				       true);
   reply->set_reply_versions(v, uv);
+  dout(10) << "OSDService::reply_op_error"<<dendl; 
   m->get_connection()->send_message(reply);
 }
 

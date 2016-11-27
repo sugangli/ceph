@@ -78,7 +78,7 @@ struct C_notify_Finish : public Context {
 struct C_aio_linger_cancel : public Context {
   Objecter *objecter;
   Objecter::LingerOp *linger_op;
-
+   
   C_aio_linger_cancel(Objecter *_objecter, Objecter::LingerOp *_linger_op)
     : objecter(_objecter), linger_op(_linger_op)
   {
@@ -384,7 +384,7 @@ int librados::IoCtxImpl::snap_remove(const char *snapName)
   reply = objecter->delete_pool_snap(poolid, sName, onfinish);
 
   if (reply < 0) {
-    delete onfinish; 
+    delete onfinish;
   } else {
     mylock.Lock();
     while(!done)
@@ -802,14 +802,14 @@ int librados::IoCtxImpl::aio_operate_parallel(const object_t& oid,
   //   oncommit, &c->objver);
 
   vector<Objecter::Op *> operations;
-  //LSFIXME: This is mainly for duplicate the operation for twice 
+  //LSFIXME: This is mainly for duplicate the operation for twice
   ::ObjectOperation *rep_0 = new ::ObjectOperation(*o);
   ::ObjectOperation *rep_1 = new ::ObjectOperation(*o);
 
   bool is_replication = true;//LSFIXME: This needs to be set at the application
   int numofreplication = 3;
   if (is_replication)
-  { 
+  {
     operations.push_back(objecter->prepare_buffer_op(
     oid, oloc, *rep_0, snap_context, ut, flags, onack,
     oncommit, &c->objver));
@@ -828,24 +828,24 @@ int librados::IoCtxImpl::aio_operate_parallel(const object_t& oid,
     std::cout << "operations[1]->target.osd:" << operations[1]->target.osd << "oid:" << oid <<std::endl;
     std::cout << "operations[2]->target.osd:" << operations[2]->target.osd << "oid:" << oid <<std::endl;
 
-    //objecter->op_submit_parallel(operations[0], &c->tid, NULL, true);
+    objecter->op_submit_parallel(operations[0], &c->tid, NULL, true);
 
     // objecter->op_submit_parallel(operations[1], &c->tid, NULL, true);
     //LS: After some point, an ack should be here
 
-    objecter->op_submit_parallel(operations[2], &c->tid, NULL, true);
+    // objecter->op_submit_parallel(operations[2], &c->tid, NULL, true);
   }
-  
-  
+
+
   //LS: reset the target osd one by one
   // for(vector<int>::iterator it = operations[2]->target.osds.end(); it != operations[2]->target.osds.begin(); ++it)
   // {
   //   int cur_index = distance(operations[2]->target.osds.begin(), it);
-  //   operations[cur_index]->target.osd = *it; 
+  //   operations[cur_index]->target.osd = *it;
   //   objecter->op_submit_parallel(operations[cur_index], &c->tid, NULL, true);
   // }
 
-  
+
 
   return 0;
 }
@@ -1885,4 +1885,3 @@ void librados::IoCtxImpl::object_list_slice(
       object_t(), string(), CEPH_NOSNAP,
       hobject_t::_reverse_bits(rev_finish), poolid, string());
 }
-

@@ -1318,6 +1318,7 @@ void ReplicatedPG::do_pg_op(OpRequestRef op)
   reply->claim_op_out_data(ops);
   reply->set_result(result);
   reply->set_reply_versions(info.last_update, info.last_user_version);
+  std::cout<< "ReplicatedPG::do_pg_op:osd->send_message_osd_client"<<std::endl;
   osd->send_message_osd_client(reply, m->get_connection());
   delete filter;
 }
@@ -1589,16 +1590,21 @@ void ReplicatedPG::do_op(OpRequestRef& op)
       !(op->may_write() || op->may_cache())) {
     // balanced reads; any replica will do
     if (!(is_primary() || is_replica())) {
+      dout(10) << "ReplicatedPG::do_op: balanced reads; any replica will do" <<dendl; 
       osd->handle_misdirected_op(this, op);
       return;
     }
-  } else {
-    // normal case; must be primary
-    if (!is_primary()) {
+  } 
+    else if(m->get_flags() & CEPH_OSD_FLAG_BUFFER){// LS: get a buffer op, do something else
+      dout(10) << "ReplicatedPG::do_op: get a buffer op, do something else" << dendl;
+      return;
+   }
+    else {
+      if (!is_primary()) {// normal case; must be primary 
       osd->handle_misdirected_op(this, op);
       return;
-    }
-  }
+      }
+    }  
   
 
   if (op->includes_pg_op()) {
@@ -1835,14 +1841,14 @@ void ReplicatedPG::do_op(OpRequestRef& op)
   /***LS: find context for buffer***/
   if(m->get_flags() & CEPH_OSD_FLAG_BUFFER){
 
-    std::cout << "ReplicatedPG:do_op: get an BUFFER OP and find the conext for it" << std::endl;
+    dout(10) << __func__ << "ReplicatedPG:do_op: get an BUFFER OP and find the conext for it" << dendl;
     r = find_object_context_buffer(oid, &obc, can_create,
     m->has_flag(CEPH_OSD_FLAG_MAP_SNAP_CLONE),
     &missing_oid);
     //do something
   /***LS: End of do buffer op***/
   } else { //LS: This is an write op
-    std::cout << "ReplicatedPG:do_op: get an WRITE/READ OP and find the conext for it" << std::endl;
+    dout(10) << __func__  << "ReplicatedPG:do_op: get an WRITE/READ OP and find the conext for it" << dendl;
     r = find_object_context(
     oid, &obc, can_create,
     m->has_flag(CEPH_OSD_FLAG_MAP_SNAP_CLONE),

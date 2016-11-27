@@ -1503,7 +1503,7 @@ static int rados_tool_common(const std::map < std::string, std::string > &opts,
   const char *pool_name = NULL;
   const char *target_pool_name = NULL;
   string oloc, target_oloc, nspace, target_nspace;
-  int concurrent_ios = 16;
+  int concurrent_ios = 1; //LS: change to 1 for test, org:16
   unsigned op_size = default_op_size;
   unsigned object_size = 0;
   unsigned max_objects = 0;
