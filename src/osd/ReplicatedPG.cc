@@ -1597,6 +1597,8 @@ void ReplicatedPG::do_op(OpRequestRef& op)
   } 
     else if(m->get_flags() & CEPH_OSD_FLAG_BUFFER){// LS: get a buffer op, do something else
       dout(10) << "ReplicatedPG::do_op: get a buffer op, do something else" << dendl;
+      MOSDOpReply *reply = new MOSDOpReply(m, 0, get_osdmap()->get_epoch(),CEPH_OSD_FLAG_ACK, false);
+      osd->send_message_osd_client(reply, m->get_connection());
       return;
    }
     else {

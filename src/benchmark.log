@@ -1,0 +1,21 @@
+Messenger::create type: async
+Maintaining 16 concurrent writes of 4194304 bytes to objects of size 4194304 for up to 10 seconds or 0 objects
+Object prefix: benchmark_data_sugang-dev0_6468
+librados::ObjectWriteOperation::write 
+ sec Cur ops   started  finished  avg MB/s  cur MB/s last lat(s)  avg lat(s)
+    0       0         0         0         0         0           -           0
+librados::ObjectWriteOperation::write
+librados::ObjectWriteOperation::write
+librados::ObjectWriteOperation::write
+librados::ObjectWriteOperation::write
+librados::ObjectWriteOperation::write
+librados::ObjectWriteOperation::write
+librados::ObjectWriteOperation::write
+librados::ObjectWriteOperation::write
+librados::ObjectWriteOperation::write
+librados::ObjectWriteOperation::write
+librados::ObjectWriteOperation::write
+librados::ObjectWriteOperation::write
+librados::ObjectWriteOperation::write
+librados::ObjectWriteOperation::write
+librados::ObjectWriteOperation::write
