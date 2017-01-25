@@ -874,6 +874,10 @@ protected:
   void eval_commit(RepGather*);
   void issue_repop(RepGather *repop, OpContext *ctx);
   void issue_commit(RepGather *repop, OpContext *ctx);
+  RepGather *new_commitop(
+    OpContext *ctx,
+    ObjectContextRef obc,
+    ceph_tid_t rep_tid);
   RepGather *new_repop(
     OpContext *ctx,
     ObjectContextRef obc,
