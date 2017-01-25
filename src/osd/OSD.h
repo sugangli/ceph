@@ -418,7 +418,7 @@ public:
 class OSDService {
 public:
   OSD *osd;
-  map<object_t, MOSDOp*> buffered_ops_map; //LS: Use OpRequest for now, maybe bufferlist later
+  static map<object_t, MOSDOp*> buffered_ops_map; //LS: Use OpRequest for now, maybe bufferlist later
   CephContext *cct;
   SharedPtrRegistry<spg_t, ObjectStore::Sequencer> osr_registry;
   ceph::shared_ptr<ObjectStore::Sequencer> meta_osr;

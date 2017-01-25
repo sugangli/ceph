@@ -1597,8 +1597,11 @@ void ReplicatedPG::do_op(OpRequestRef& op)
   } 
     else if(m->get_flags() & CEPH_OSD_FLAG_BUFFER){// LS: get a buffer op, do something else
       dout(10) << "ReplicatedPG::do_op: get a buffer op, do something else" << dendl;
-      MOSDOpReply *reply = new MOSDOpReply(m, 0, get_osdmap()->get_epoch(),CEPH_OSD_FLAG_ACK, false);
-      osd->send_message_osd_client(reply, m->get_connection());
+      dout(10) << __func__ << "ReplicatedPG:do_op: get an BUFFER OP and find the conext for it" << dendl;
+      r = find_object_context_buffer(oid, &obc, can_create,
+      m->has_flag(CEPH_OSD_FLAG_MAP_SNAP_CLONE),
+      &missing_oid);
+      buffer_object(ctx);
       return;
    }
     else {
@@ -2146,7 +2149,7 @@ void ReplicatedPG::do_op(OpRequestRef& op)
   op->mark_started();
   ctx->src_obc.swap(src_obc);
 
-  //buffer the objector in a map, even if two writer give the same oid
+  //LS: buffer the objector in a map, even if two writer give the same oid
   if(m->get_flags() & CEPH_OSD_FLAG_BUFFER) {
     buffer_object(ctx);
     return;
@@ -3137,6 +3140,7 @@ void ReplicatedPG::execute_ctx(OpContext *ctx)
   // issue replica writes
   ceph_tid_t rep_tid = osd->get_tid();
 
+  //LS: need to implements the issue commit instead of issue replication
   RepGather *repop = new_repop(ctx, obc, rep_tid);
 
   issue_repop(repop, ctx);
@@ -8674,6 +8678,29 @@ ReplicatedPG::RepGather *ReplicatedPG::new_repop(
 
   return repop;
 }
+
+//LS:: copying replication op for commit 
+ReplicatedPG::RepGather *ReplicatedPG::new_commitop(
+  OpContext *ctx, ObjectContextRef obc,
+  ceph_tid_t rep_tid)
+{
+  if (ctx->op)
+    dout(10) << "new_commitop rep_tid " << rep_tid << " on " << *ctx->op->get_req() << dendl;
+  else
+    dout(10) << "new_commitop rep_tid " << rep_tid << " (no op)" << dendl;
+
+  RepGather *repop = new RepGather(ctx, rep_tid, info.last_complete);
+
+  repop->start = ceph_clock_now(cct);
+
+  repop_queue.push_back(&repop->queue_item);
+  repop->get();
+
+  osd->logger->inc(l_osd_op_wip);
+
+  return repop;
+}
+
 
 ReplicatedPG::RepGather *ReplicatedPG::new_repop(
   ObcLockManager &&manager,
