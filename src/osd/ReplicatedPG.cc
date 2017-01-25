@@ -1626,7 +1626,8 @@
       osd->reply_op_error(op, -EPERM);
       return;
     }
-
+    //LS: jump to here if it is an buffer op
+    buffer_label:
     hobject_t head(m->get_oid(), m->get_object_locator().key,
   		 CEPH_NOSNAP, m->get_pg().ps(),
   		 info.pgid.pool(), m->get_object_locator().nspace);
@@ -1771,6 +1772,7 @@
       return;
     }
 
+
     // missing snapdir?
     hobject_t snapdir = head.get_snapdir();
 
@@ -1828,8 +1830,7 @@
       }
     }
 
-    //LS: jump to here if it is an buffer op
-    buffer_label:
+    
     ObjectContextRef obc;
     bool can_create = op->may_write() || op->may_cache();
     hobject_t missing_oid;
