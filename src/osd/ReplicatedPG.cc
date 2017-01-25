@@ -1597,11 +1597,13 @@ void ReplicatedPG::do_op(OpRequestRef& op)
   } 
     else if(m->get_flags() & CEPH_OSD_FLAG_BUFFER){// LS: get a buffer op, do something else
       dout(10) << "ReplicatedPG::do_op: get a buffer op, do something else" << dendl;
-      dout(10) << __func__ << "ReplicatedPG:do_op: get an BUFFER OP and find the conext for it" << dendl;
-      r = find_object_context_buffer(oid, &obc, can_create,
-      m->has_flag(CEPH_OSD_FLAG_MAP_SNAP_CLONE),
-      &missing_oid);
-      buffer_object(ctx);
+      goto buffer_label;
+      // dout(10) << __func__ << "ReplicatedPG:do_op: get an BUFFER OP and find the conext for it" << dendl;
+      // r = find_object_context_buffer(oid, &obc, can_create,
+      // m->has_flag(CEPH_OSD_FLAG_MAP_SNAP_CLONE),
+      // &missing_oid);
+      // buffer_object(ctx);
+
       return;
    }
     else {
@@ -1844,21 +1846,22 @@ void ReplicatedPG::do_op(OpRequestRef& op)
 
   int r = 0;
   /***LS: find context for buffer***/
-  if(m->get_flags() & CEPH_OSD_FLAG_BUFFER){
+  buffer_label:
+    if(m->get_flags() & CEPH_OSD_FLAG_BUFFER){
 
-    dout(10) << __func__ << "ReplicatedPG:do_op: get an BUFFER OP and find the conext for it" << dendl;
-    r = find_object_context_buffer(oid, &obc, can_create,
-    m->has_flag(CEPH_OSD_FLAG_MAP_SNAP_CLONE),
-    &missing_oid);
-    //do something
-  /***LS: End of do buffer op***/
-  } else { //LS: This is an write op
-    dout(10) << __func__  << "ReplicatedPG:do_op: get an WRITE/READ OP and find the conext for it" << dendl;
-    r = find_object_context(
-    oid, &obc, can_create,
-    m->has_flag(CEPH_OSD_FLAG_MAP_SNAP_CLONE),
-    &missing_oid);
-  }
+      dout(10) << __func__ << "ReplicatedPG:do_op: get an BUFFER OP and find the conext for it" << dendl;
+      r = find_object_context_buffer(oid, &obc, can_create,
+      m->has_flag(CEPH_OSD_FLAG_MAP_SNAP_CLONE),
+      &missing_oid);
+      //do something
+    /***LS: End of do buffer op***/
+    } else { //LS: This is an write op
+      dout(10) << __func__  << "ReplicatedPG:do_op: get an WRITE/READ OP and find the conext for it" << dendl;
+      r = find_object_context(
+      oid, &obc, can_create,
+      m->has_flag(CEPH_OSD_FLAG_MAP_SNAP_CLONE),
+      &missing_oid);
+    }
  
   
 
