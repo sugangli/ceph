@@ -1597,7 +1597,7 @@
     } 
       else if(m->get_flags() & CEPH_OSD_FLAG_BUFFER){// LS: get a buffer op, do something else
         dout(10) << "ReplicatedPG::do_op: get a buffer op, do something else" << dendl;
-        goto buffer_label;
+        buffer_object(*m);
         // dout(10) << __func__ << "ReplicatedPG:do_op: get an BUFFER OP and find the conext for it" << dendl;
         // r = find_object_context_buffer(oid, &obc, can_create,
         // m->has_flag(CEPH_OSD_FLAG_MAP_SNAP_CLONE),
@@ -1626,8 +1626,6 @@
       osd->reply_op_error(op, -EPERM);
       return;
     }
-    //LS: jump to here if it is an buffer op
-    buffer_label:
     hobject_t head(m->get_oid(), m->get_object_locator().key,
   		 CEPH_NOSNAP, m->get_pg().ps(),
   		 info.pgid.pool(), m->get_object_locator().nspace);
@@ -2154,13 +2152,6 @@
     op->mark_started();
     ctx->src_obc.swap(src_obc);
 
-    //LS: buffer the objector in a map, even if two writer give the same oid
-    if(m->get_flags() & CEPH_OSD_FLAG_BUFFER) {
-      buffer_object(ctx);
-      return;
-        //send a ack to the client
-      
-    }
     execute_ctx(ctx);
     utime_t prepare_latency = ceph_clock_now(cct);
     prepare_latency -= op->get_dequeued_time();
@@ -2398,6 +2389,8 @@
     }
     return cache_result_t::NOOP;
   }
+
+
 
   bool ReplicatedPG::maybe_promote(ObjectContextRef obc,
   				 const hobject_t& missing_oid,
@@ -2893,13 +2886,9 @@
   }
 
   //LS: buffer the object in the map
-  void ReplicatedPG::buffer_object(OpContext *ctx)
+  void ReplicatedPG::buffer_object(MOSDOp *m)
   {
-    dout(10) << __func__ << " " << ctx << dendl;
-
-    ctx->reset_obs(ctx->obc);
-    OpRequestRef op = ctx->op;
-    MOSDOp *m = static_cast<MOSDOp*>(op->get_req());
+    dout(10) << __func__ << " " << *m << dendl;
     object_t& oid = m->get_oid();
     dout(10) << __func__ << *m << "oid: "<< m->get_oid().name << dendl;
     osd->buffered_ops_map.insert( std::pair<object_t, MOSDOp*>(oid, m));

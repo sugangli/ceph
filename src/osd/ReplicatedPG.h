@@ -1162,7 +1162,7 @@ protected:
     const hobject_t& head, const hobject_t& coid,
     object_info_t *poi);
   void execute_ctx(OpContext *ctx);
-  void buffer_object(OpContext *ctx); //LS: buffer the content from 
+  void buffer_object(MOSDOp *m); //LS: buffer the content from 
   int buffer_confirm_reply();//LS: reply the client for the buffer
   void finish_ctx(OpContext *ctx, int log_op_type, bool maintain_ssc=true,
 		  bool scrub_ok=false);
