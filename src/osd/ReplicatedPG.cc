@@ -8586,7 +8586,7 @@
       ctx->reqid,
       ctx->op);
   }
-
+  //LS: copy issue_repop
   void ReplicatedPG::issue_commit(RepGather *repop, OpContext *ctx)
   {
     const hobject_t& soid = ctx->obs->oi.soid;
