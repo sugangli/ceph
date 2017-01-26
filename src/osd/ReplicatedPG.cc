@@ -2901,12 +2901,12 @@
     OpRequestRef op = ctx->op;
     MOSDOp *m = static_cast<MOSDOp*>(op->get_req());
     object_t& oid = m->get_oid();
-    std::cout<< "*m :" << *m << " oid :" << m->get_oid().name << std::endl;
+    dout(10) << __func__ << *m << "oid: "<< m->get_oid().name << dendl;
     osd->buffered_ops_map.insert( std::pair<object_t, MOSDOp*>(oid, m));
     for(map<object_t, MOSDOp*>::const_iterator it = osd->buffered_ops_map.begin(); 
       it != osd->buffered_ops_map.end(); it++)
     {
-      std::cout << "buffered_ops_map: " << it->first << " " << it->second << std::endl;
+     dout(10) << __func__ << "buffered_ops_map: " << it->first << " " << it->second << dendl;
     }
     //buffer the object in a global data structure.
   }
