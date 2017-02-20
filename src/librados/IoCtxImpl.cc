@@ -824,12 +824,12 @@ int librados::IoCtxImpl::aio_operate_parallel(const object_t& oid,
     operations[0]->target.osd = operations[2]->target.osds[2];
     operations[1]->target.osd = operations[2]->target.osds[1];
 
-    std::cout << "operations[0]->target.osd:" << operations[0]->target.osd << "oid:" << oid << std::endl;
-    std::cout << "operations[1]->target.osd:" << operations[1]->target.osd << "oid:" << oid <<std::endl;
-    std::cout << "operations[2]->target.osd:" << operations[2]->target.osd << "oid:" << oid <<std::endl;
+    // std::cout << "operations[0]->target.osd:" << operations[0]->target.osd << "oid:" << oid << std::endl;
+    // std::cout << "operations[1]->target.osd:" << operations[1]->target.osd << "oid:" << oid <<std::endl;
+    // std::cout << "operations[2]->target.osd:" << operations[2]->target.osd << "oid:" << oid <<std::endl;
 
-    objecter->op_submit_parallel(operations[0], &c->tid, NULL, true);
-    objecter->op_submit_parallel(operations[1], &c->tid, NULL, true);
+    // objecter->op_submit_parallel(operations[0], &c->tid, NULL, true);
+    // objecter->op_submit_parallel(operations[1], &c->tid, NULL, true);
     objecter->op_submit_parallel(operations[2], &c->tid, NULL, true);
 
     // objecter->op_submit_parallel(operations[1], &c->tid, NULL, true);

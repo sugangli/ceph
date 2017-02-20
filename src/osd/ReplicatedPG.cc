@@ -1596,7 +1596,7 @@
       }
     } 
       else if(m->get_flags() & CEPH_OSD_FLAG_BUFFER){// LS: get a buffer op, do something else
-        dout(10) << "ReplicatedPG::do_op: get a buffer op, do something else" << dendl;
+        dout(10) << "ReplicatedPG::do_op: get a buffer op, buffer it in a map" << dendl;
         buffer_object(m);
         // dout(10) << __func__ << "ReplicatedPG:do_op: get an BUFFER OP and find the conext for it" << dendl;
         // r = find_object_context_buffer(oid, &obc, can_create,
