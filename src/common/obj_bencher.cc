@@ -469,6 +469,7 @@ int ObjBencher::write_bench(int secondsToRun,
   lock.Lock();
   while (!secondsToRun || ceph_clock_now(cct) < stopTime) {
     bool found = false;
+    out(cout) << " while (!secondsToRun || ceph_clock_now(cct) < stopTime)" << std::endl;
     while (1) {
       int old_slot = slot;
       out(cout) << "in write_bench while(1)" << std::endl;
@@ -535,6 +536,7 @@ int ObjBencher::write_bench(int secondsToRun,
   lock.Unlock();
 
   while (data.finished < data.started) {
+    out(cout) << "while (data.finished < data.started)" << std::endl;
     slot = data.finished % concurrentios;
     completion_wait(slot);
     lock.Lock();
