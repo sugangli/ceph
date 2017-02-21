@@ -471,6 +471,7 @@ int ObjBencher::write_bench(int secondsToRun,
     bool found = false;
     while (1) {
       int old_slot = slot;
+      out(cout) << "in write_bench while(1)" << std::endl;
       do {
         if (completion_is_done(slot)) {
             found = true;
