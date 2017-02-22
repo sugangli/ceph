@@ -2216,15 +2216,15 @@ void Objecter::_op_submit_with_budget_parallel(Op *op, shunique_lock& sul,
 
   // throttle.  before we look at any state, because
   // _take_op_budget() may drop our lock while it blocks.
-  if (!op->ctx_budgeted || (ctx_budget && (*ctx_budget == -1)) && !(op->target.flags & CEPH_OSD_FLAG_BUFFER)) {
-    std::cout << " Objecter::_op_submit_with_budget_parallel: not a buffer op  " << std::endl;
-    int op_budget = _take_op_budget(op, sul);
-    // take and pass out the budget for the first OP
-    // in the context session
-    if (ctx_budget && (*ctx_budget == -1)) {
-      *ctx_budget = op_budget;
-    }
-  }
+  // if (!op->ctx_budgeted || (ctx_budget && (*ctx_budget == -1)) && !(op->target.flags & CEPH_OSD_FLAG_BUFFER)) {
+  //   std::cout << " Objecter::_op_submit_with_budget_parallel: not a buffer op  " << std::endle;
+  //   int op_budget = _take_op_budget(op, sul);
+  //   // take and pass out the budget for the first OP
+  //   // in the context session
+  //   if (ctx_budget && (*ctx_budget == -1)) {
+  //     *ctx_budget = op_budget;
+  //   }
+  // }
 
   if (osd_timeout > timespan(0)) {
     if (op->tid == 0)
