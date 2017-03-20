@@ -392,7 +392,7 @@ void librados::ObjectWriteOperation::write(uint64_t off, const bufferlist& bl)
 {
   ::ObjectOperation *o = &impl->o;
   bufferlist c = bl;
-  std::cout<<"librados::ObjectWriteOperation::write"<<std::endl;
+  // std::cout<<"librados::ObjectWriteOperation::write"<<std::endl;
   o->write(off, c);
 }
 
