@@ -899,8 +899,8 @@ protected:
       snprintf(key, sizeof(key), "bench-xattr-key-%d", (int)offset);
       op.setxattr(key, bl);
     }
-
-    return io_ctx.aio_operate(oid, completions[slot], &op);//LS: parallel version starts from here
+    //return io_ctx.aio_operate(oid, completions[slot], &op);
+    return io_ctx.aio_operate_parallel(oid, completions[slot], &op, 3);//LS: parallel version starts from here
   }
 
   int aio_remove(const std::string& oid, int slot) {
@@ -3344,6 +3344,8 @@ int main(int argc, const char **argv)
       opts["prefix"] = val;
     } else if (ceph_argparse_witharg(args, i, &val, "-p", "--pool", (char*)NULL)) {
       opts["pool"] = val;
+    } else if (ceph_argparse_witharg(args, i, &val, "-para", "--parallel", (char*)NULL)) {
+      opts["parallel"] = val;
     } else if (ceph_argparse_witharg(args, i, &val, "--target-pool", (char*)NULL)) {
       opts["target_pool"] = val;
     } else if (ceph_argparse_witharg(args, i, &val, "--object-locator" , (char *)NULL)) {

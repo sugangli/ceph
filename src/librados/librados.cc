@@ -1462,11 +1462,11 @@ int librados::IoCtx::aio_operate(const std::string& oid, AioCompletion *c,
 
 //LS: parallel version of write
 int librados::IoCtx::aio_operate_parallel(const std::string& oid, AioCompletion *c,
-         librados::ObjectWriteOperation *o)
+         librados::ObjectWriteOperation *o, int num_rep)
 {
   object_t obj(oid);
   return io_ctx_impl->aio_operate_parallel(obj, &o->impl->o, c->pc,
-          io_ctx_impl->snapc, 0);
+          io_ctx_impl->snapc, 0, num_rep);
 }
 
 

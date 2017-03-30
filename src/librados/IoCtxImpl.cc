@@ -784,7 +784,7 @@ int librados::IoCtxImpl::aio_operate(const object_t& oid,
 //LS: parallel version of aio write
 int librados::IoCtxImpl::aio_operate_parallel(const object_t& oid,
              ::ObjectOperation *o, AioCompletionImpl *c,
-             const SnapContext& snap_context, int flags)
+             const SnapContext& snap_context, int flags, int num_rep)
 {
   auto ut = ceph::real_clock::now(client->cct);
   /* can't write to a snapshot */
@@ -828,8 +828,8 @@ int librados::IoCtxImpl::aio_operate_parallel(const object_t& oid,
     // std::cout << "operations[1]->target.osd:" << operations[1]->target.osd << "oid:" << oid <<std::endl;
     // std::cout << "operations[2]->target.osd:" << operations[2]->target.osd << "oid:" << oid <<std::endl;
 
-    // objecter->op_submit_parallel(operations[0], &c->tid, NULL, true);
-    // objecter->op_submit_parallel(operations[1], &c->tid, NULL, true);
+    objecter->op_submit_parallel(operations[0], &c->tid, NULL, true);
+    objecter->op_submit_parallel(operations[1], &c->tid, NULL, true);
     objecter->op_submit_parallel(operations[2], &c->tid, NULL, true);
 
     // objecter->op_submit_parallel(operations[1], &c->tid, NULL, true);
