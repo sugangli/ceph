@@ -899,8 +899,8 @@ protected:
       snprintf(key, sizeof(key), "bench-xattr-key-%d", (int)offset);
       op.setxattr(key, bl);
     }
-    //return io_ctx.aio_operate(oid, completions[slot], &op);
-    return io_ctx.aio_operate_parallel(oid, completions[slot], &op, 3);//LS: parallel version starts from here
+    return io_ctx.aio_operate(oid, completions[slot], &op);
+    // return io_ctx.aio_operate_parallel(oid, completions[slot], &op, 3);//LS: parallel version starts from here
   }
 
   int aio_remove(const std::string& oid, int slot) {
